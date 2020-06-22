@@ -451,7 +451,7 @@ int fdtdec_get_pci_vendev(const void *blob, int node,
  * @return 0 if ok, negative on error
  */
 int fdtdec_get_pci_bar32(struct udevice *dev, struct fdt_pci_addr *addr,
-			 u32 *bar);
+			 u128 *bar);
 
 /**
  * Look up a 32-bit integer property in a node and return it. The property

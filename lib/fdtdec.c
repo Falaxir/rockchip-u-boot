@@ -280,7 +280,7 @@ int fdtdec_get_pci_vendev(const void *blob, int node, u16 *vendor, u16 *device)
 }
 
 int fdtdec_get_pci_bar32(struct udevice *dev, struct fdt_pci_addr *addr,
-			 u32 *bar)
+			 u128 *bar)
 {
 	int barnum;
 

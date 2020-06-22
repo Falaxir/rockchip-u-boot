@@ -104,7 +104,7 @@ __weak int pci_skip_dev(struct pci_controller *hose, pci_dev_t dev)
 void *pci_map_bar(pci_dev_t pdev, int bar, int flags)
 {
 	pci_addr_t pci_bus_addr;
-	u32 bar_response;
+	u128 bar_response;
 
 	/* read BAR address */
 	pci_read_config_dword(pdev, bar, &bar_response);
@@ -120,7 +120,7 @@ void *pci_map_bar(pci_dev_t pdev, int bar, int flags)
 }
 
 void pci_write_bar32(struct pci_controller *hose, pci_dev_t dev, int barnum,
-		     u32 addr_and_ctrl)
+		     u128 addr_and_ctrl)
 {
 	int bar;
 
@@ -128,9 +128,9 @@ void pci_write_bar32(struct pci_controller *hose, pci_dev_t dev, int barnum,
 	pci_hose_write_config_dword(hose, dev, bar, addr_and_ctrl);
 }
 
-u32 pci_read_bar32(struct pci_controller *hose, pci_dev_t dev, int barnum)
+u128 pci_read_bar32(struct pci_controller *hose, pci_dev_t dev, int barnum)
 {
-	u32 addr;
+	u128 addr;
 	int bar;
 
 	bar = PCI_BASE_ADDRESS_0 + barnum * 4;

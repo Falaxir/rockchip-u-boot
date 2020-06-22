@@ -112,6 +112,28 @@ static inline u32 __raw_readl(const volatile void __iomem *addr)
 	return w;
 }
 
+static inline u64 __raw_readm(const volatile void __iomem *addr)
+{
+	u64 w;
+
+	__asm__ __volatile__("ld%U1	%0, %1\n"
+			     : "=r" (w)
+			     : "m" (*(volatile u64 __force *)addr)
+			     : "memory");
+	return w;
+}
+
+static inline u128 __raw_readn(const volatile void __iomem *addr)
+{
+	u128 w;
+
+	__asm__ __volatile__("ld%U1	%0, %1\n"
+			     : "=r" (w)
+			     : "m" (*(volatile u128 __force *)addr)
+			     : "memory");
+	return w;
+}
+
 static inline void __raw_writeb(u8 b, volatile void __iomem *addr)
 {
 	__asm__ __volatile__("stb%U1	%0, %1\n"
@@ -133,6 +155,22 @@ static inline void __raw_writel(u32 w, volatile void __iomem *addr)
 	__asm__ __volatile__("st%U1	%0, %1\n"
 			     :
 			     : "r" (w), "m" (*(volatile u32 __force *)addr)
+			     : "memory");
+}
+
+static inline void __raw_writem(u64 w, volatile void __iomem *addr)
+{
+	__asm__ __volatile__("st%U1	%0, %1\n"
+			     :
+			     : "r" (w), "m" (*(volatile u64 __force *)addr)
+			     : "memory");
+}
+
+static inline void __raw_writen(u128 w, volatile void __iomem *addr)
+{
+	__asm__ __volatile__("st%U1	%0, %1\n"
+			     :
+			     : "r" (w), "m" (*(volatile u128 __force *)addr)
 			     : "memory");
 }
 
@@ -223,10 +261,14 @@ static inline int __raw_writesl(unsigned int addr, void *data, int longlen)
 #define readb(c)		({ u8  __v = readb_relaxed(c); __iormb(); __v; })
 #define readw(c)		({ u16 __v = readw_relaxed(c); __iormb(); __v; })
 #define readl(c)		({ u32 __v = readl_relaxed(c); __iormb(); __v; })
+#define readm(c)		({ u64 __v = readm_relaxed(c); __iormb(); __v; })
+#define readn(c)		({ u128 __v = readn_relaxed(c); __iormb(); __v; })
 
 #define writeb(v,c)		({ __iowmb(); writeb_relaxed(v,c); })
 #define writew(v,c)		({ __iowmb(); writew_relaxed(v,c); })
 #define writel(v,c)		({ __iowmb(); writel_relaxed(v,c); })
+#define writem(v,c)		({ __iowmb(); writem_relaxed(v,c); })
+#define writen(v,c)		({ __iowmb(); writen_relaxed(v,c); })
 
 /*
  * Relaxed API for drivers which can handle barrier ordering themselves
@@ -242,10 +284,16 @@ static inline int __raw_writesl(unsigned int addr, void *data, int longlen)
 					__raw_readw(c)); __r; })
 #define readl_relaxed(c) ({ u32 __r = le32_to_cpu((__force __le32) \
 					__raw_readl(c)); __r; })
+#define readm_relaxed(c) ({ u64 __r = le64_to_cpu((__force __le64) \
+					__raw_readm(c)); __r; })
+#define readn_relaxed(c) ({ u128 __r = le128_to_cpu((__force __le128) \
+					__raw_readn(c)); __r; })
 
 #define writeb_relaxed(v,c)	__raw_writeb(v,c)
 #define writew_relaxed(v,c)	__raw_writew((__force u16) cpu_to_le16(v),c)
 #define writel_relaxed(v,c)	__raw_writel((__force u32) cpu_to_le32(v),c)
+#define writem_relaxed(v,c)	__raw_writem((__force u64) cpu_to_le64(v),c)
+#define writen_relaxed(v,c)	__raw_writen((__force u128) cpu_to_le128(v),c)
 
 #define out_arch(type, endian, a, v)	__raw_write##type(cpu_to_##endian(v), a)
 #define in_arch(type, endian, a)	endian##_to_cpu(__raw_read##type(a))

@@ -1073,9 +1073,9 @@ int pci_get_regions(struct udevice *dev, struct pci_region **iop,
 	return (*iop != NULL) + (*memp != NULL) + (*prefp != NULL);
 }
 
-u32 dm_pci_read_bar32(struct udevice *dev, int barnum)
+u128 dm_pci_read_bar32(struct udevice *dev, int barnum)
 {
-	u32 addr;
+	u128 addr;
 	int bar;
 
 	bar = PCI_BASE_ADDRESS_0 + barnum * 4;

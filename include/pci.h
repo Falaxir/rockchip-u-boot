@@ -662,7 +662,7 @@ extern int pci_hose_read_config_byte(struct pci_controller *hose,
 extern int pci_hose_read_config_word(struct pci_controller *hose,
 				     pci_dev_t dev, int where, u16 *val);
 extern int pci_hose_read_config_dword(struct pci_controller *hose,
-				      pci_dev_t dev, int where, u32 *val);
+				      pci_dev_t dev, int where, u128 *val);
 extern int pci_hose_write_config_byte(struct pci_controller *hose,
 				      pci_dev_t dev, int where, u8 val);
 extern int pci_hose_write_config_word(struct pci_controller *hose,
@@ -674,7 +674,7 @@ extern int pci_hose_write_config_dword(struct pci_controller *hose,
 #ifndef CONFIG_DM_PCI
 extern int pci_read_config_byte(pci_dev_t dev, int where, u8 *val);
 extern int pci_read_config_word(pci_dev_t dev, int where, u16 *val);
-extern int pci_read_config_dword(pci_dev_t dev, int where, u32 *val);
+extern int pci_read_config_dword(pci_dev_t dev, int where, u128 *val);
 extern int pci_write_config_byte(pci_dev_t dev, int where, u8 val);
 extern int pci_write_config_word(pci_dev_t dev, int where, u16 val);
 extern int pci_write_config_dword(pci_dev_t dev, int where, u32 val);
@@ -772,7 +772,7 @@ extern void imx_pcie_remove(void);
  * @addr:	BAR address with control bits
  */
 void pci_write_bar32(struct pci_controller *hose, pci_dev_t dev, int barnum,
-		     u32 addr);
+		     u128 addr);
 
 /**
  * pci_read_bar32() - read the address of a bar
@@ -782,7 +782,7 @@ void pci_write_bar32(struct pci_controller *hose, pci_dev_t dev, int barnum,
  * @barnum:	BAR number (0-5)
  * @return address of the bar, masking out any control bits
  * */
-u32 pci_read_bar32(struct pci_controller *hose, pci_dev_t dev, int barnum);
+u128 pci_read_bar32(struct pci_controller *hose, pci_dev_t dev, int barnum);
 
 /**
  * pci_hose_find_devices() - Find devices by vendor/device ID
@@ -806,7 +806,6 @@ enum pci_size_t {
 	PCI_SIZE_32,
 	PCI_SIZE_64,
 	PCI_SIZE_128,
-	PCI_SIZE_256,
 };
 
 struct udevice;
@@ -1213,7 +1212,7 @@ void dm_pci_write_bar32(struct udevice *dev, int barnum, u32 addr);
  * @barnum:	Bar number to read (numbered from 0)
  * @return: value of BAR
  */
-u32 dm_pci_read_bar32(struct udevice *dev, int barnum);
+u128 dm_pci_read_bar32(struct udevice *dev, int barnum);
 
 /**
  * dm_pci_bus_to_phys() - convert a PCI bus address to a physical address
