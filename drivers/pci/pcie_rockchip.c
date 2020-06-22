@@ -426,12 +426,6 @@ static int pcie_rockchip_read_config(struct udevice *bus, pci_dev_t bdf,
         size1 = 2;
     else if( size == PCI_SIZE_32 )
         size1 = 4;
-    else if( size == PCI_SIZE_64 )
-        size1 = 8;
-    else if( size == PCI_SIZE_128 )
-        size1 = 16;
-    else if( size == PCI_SIZE_256 )
-        size1 = 32;
     else {
         debug("invalid\n");
         return -1;

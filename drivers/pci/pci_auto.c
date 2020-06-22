@@ -15,7 +15,7 @@
 
 /* the user can define CONFIG_SYS_PCI_CACHE_LINE_SIZE to avoid problems */
 #ifndef CONFIG_SYS_PCI_CACHE_LINE_SIZE
-#define CONFIG_SYS_PCI_CACHE_LINE_SIZE	8
+#define CONFIG_SYS_PCI_CACHE_LINE_SIZE	128
 #endif
 
 void dm_pciauto_setup_device(struct udevice *dev, int bars_num,

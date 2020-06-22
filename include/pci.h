@@ -11,7 +11,7 @@
 #ifndef _PCI_H
 #define _PCI_H
 
-#define PCI_CFG_SPACE_SIZE	256
+#define PCI_CFG_SPACE_SIZE	512
 #define PCI_CFG_SPACE_EXP_SIZE	4096
 
 /*
@@ -804,9 +804,6 @@ enum pci_size_t {
 	PCI_SIZE_8,
 	PCI_SIZE_16,
 	PCI_SIZE_32,
-	PCI_SIZE_64,
-	PCI_SIZE_128,
-	PCI_SIZE_256,
 };
 
 struct udevice;
