@@ -210,24 +210,24 @@ enum of_gpio_flags {
 #define PHY_LANE_IDLE_D_SHIFT 6
 
 struct rockchip_pcie_phy {
-	u256 reg_base;
-	u256 pcie_conf;
-	u128 pcie_status;
-	u128 rst_addr;
+	u64 reg_base;
+	u64 pcie_conf;
+	u32 pcie_status;
+	u32 rst_addr;
 };
 
 struct pcie_bus {
 	struct pci_region regions[MAX_PCI_REGIONS];
-	u128 region_count;
-	u256 msi_base;
+	u32 region_count;
+	u64 msi_base;
 };
 
 struct pcie_rockchip {
 	int first_busno;
-	u128 rst_addr;
-	u256 axi_base;
-	u128 axi_size;
-	u256 apb_base;
+	u32 rst_addr;
+	u64 axi_base;
+	u32 axi_size;
+	u64 apb_base;
 	struct rockchip_pcie_phy phy;
 	struct gpio_desc rst_gpio;
 	struct pcie_bus bus;
@@ -237,7 +237,7 @@ struct pcie_rockchip {
 #define RKIO_GRF_PHYS                   0xFF770000
 #define CRU_SOFTRST_CON		0x400
 #define CRU_SOFTRSTS_CON(i)	(CRU_SOFTRST_CON + ((i) * 4))
-void rkcru_pcie_soft_reset(enum pcie_reset_id id, u128 val)
+void rkcru_pcie_soft_reset(enum pcie_reset_id id, u32 val)
 {
 	if (id == PCIE_RESET_PHY) {
 	    writel((0x1 << 23) | (val << 7),
@@ -263,8 +263,8 @@ void rkcru_pcie_soft_reset(enum pcie_reset_id id, u128 val)
 }
 
 
-static inline u128 phy_rd_cfg(struct rockchip_pcie_phy *rk_phy,
-			     u128 addr)
+static inline u32 phy_rd_cfg(struct rockchip_pcie_phy *rk_phy,
+			     u32 addr)
 {
 	writel(HIWORD_UPDATE_PHY(addr,
 				 PHY_CFG_RD_MASK,
@@ -274,7 +274,7 @@ static inline u128 phy_rd_cfg(struct rockchip_pcie_phy *rk_phy,
 }
 
 static inline void phy_wr_cfg(struct rockchip_pcie_phy *rk_phy,
-			      u128 addr, u128 data)
+			      u32 addr, u32 data)
 {
 	writel(HIWORD_UPDATE_PHY(data, PHY_CFG_DATA_MASK,
 				 PHY_CFG_DATA_SHIFT) |
@@ -315,10 +315,10 @@ static int pcie_rockchip_addr_valid(pci_dev_t d, int first_busno)
     return 1;
 }
 
-static int rockchip_pcie_rd_own_conf(void *priv, int where, int size, u128 *val)
+static int rockchip_pcie_rd_own_conf(void *priv, int where, int size, u32 *val)
 {
     struct pcie_rockchip *rockchip = (struct pcie_rockchip *)priv;
-    u256 addr = rockchip->apb_base + PCIE_RC_CONFIG_BASE + where;
+    u64 addr = rockchip->apb_base + PCIE_RC_CONFIG_BASE + where;
 
 	if (size == 4) {
         *val = readl(addr);
@@ -326,10 +326,6 @@ static int rockchip_pcie_rd_own_conf(void *priv, int where, int size, u128 *val)
         *val = readw(addr);
     } else if (size == 1) {
         *val = readb(addr);
-    } else if (size == 8) {
-        *val = readm(addr);
-    } else if (size == 16) {
-        *val = readn(addr);
     } else {
         *val = 0;
         return -1;
@@ -338,24 +334,16 @@ static int rockchip_pcie_rd_own_conf(void *priv, int where, int size, u128 *val)
     return 0;
 }
 
-static int rockchip_pcie_wr_own_conf(void *priv, int where, int size, u128 val)
+static int rockchip_pcie_wr_own_conf(void *priv, int where, int size, u32 val)
 {
     struct pcie_rockchip *rockchip = (struct pcie_rockchip *)priv;
-    u128 mask, tmp, offset;
+    u32 mask, tmp, offset;
 
     offset = where & ~0x3;
     if (size == 4) {
         writel(val, (u64)(rockchip->apb_base + PCIE_RC_CONFIG_BASE + offset));
         return 0;
     }
-	if (size == 8) {
-        writem(val, (u128)(rockchip->apb_base + PCIE_RC_CONFIG_BASE + offset));
-        return 0;
-	}
-	if (size == 16) {
-        writen(val, (u256)(rockchip->apb_base + PCIE_RC_CONFIG_BASE + offset));
-        return 0;
-	}
 
     mask = ~(((1 << (size * 8)) - 1) << ((where & 0x3) * 8));
 
@@ -372,9 +360,9 @@ static int rockchip_pcie_wr_own_conf(void *priv, int where, int size, u128 val)
 }
 
 static int rockchip_pcie_rd_other_conf(void *priv, int where,
-                                       int size, u128 *val)
+                                       int size, u32 *val)
 {
-    u128 busdev;
+    u32 busdev;
     struct pcie_rockchip *rockchip = (struct pcie_rockchip *)priv;
 
     /*
@@ -389,10 +377,6 @@ static int rockchip_pcie_rd_other_conf(void *priv, int where,
         *val = readw(rockchip->axi_base + busdev);
     } else if (size == 1) {
         *val = readb(rockchip->axi_base + busdev);
-    } else if (size == 8) {
-        *val = readm(rockchip->axi_base + busdev);
-    } else if (size == 16) {
-        *val = readn(rockchip->axi_base + busdev);
     } else {
         *val = 0;
         return -1;
@@ -417,10 +401,6 @@ static int rockchip_pcie_wr_other_conf(void *priv, int where, int size, u128 val
         writew(val, rockchip->axi_base + busdev);
     else if (size == 1)
         writeb(val, rockchip->axi_base + busdev);
-	else if (size == 8)
-		writem(val, rockchip->axi_base + busdev);
-	else if (size == 16)
-		writen(val, rockchip->axi_base + busdev);
     else
         return -1;
 
@@ -456,11 +436,11 @@ static int pcie_rockchip_read_config(struct udevice *bus, pci_dev_t bdf,
     }
 
     if(PCI_BUS(bdf) == pcie->first_busno) {
-        ret = rockchip_pcie_rd_own_conf(pcie, offset, size1,(u128 *)valuep);
+        ret = rockchip_pcie_rd_own_conf(pcie, offset, size1,(u32 *)valuep);
         if(ret < 0)
             return ret;
 	} else {
-        ret = rockchip_pcie_rd_other_conf(pcie, offset, size1, (u128 *)valuep);
+        ret = rockchip_pcie_rd_other_conf(pcie, offset, size1, (u32 *)valuep);
         if(ret < 0)
 			return ret;
 	}
@@ -763,9 +743,9 @@ static int phy_power_on(struct rockchip_pcie_phy *rk_phy)
 
 static int rockchip_pcie_init_port(struct pcie_rockchip *rockchip)
 {
-	u128 status;
-	u128 timeout;
-	u128 reg;
+	u32 status;
+	u32 timeout;
+	u32 reg;
 
 	/* assert aclk_rst */
 	rkcru_pcie_soft_reset(PCIE_RESET_ACLK, 1);
@@ -863,12 +843,12 @@ static int rockchip_pcie_init_port(struct pcie_rockchip *rockchip)
 
 static int rockchip_pcie_prog_ob_atu(struct pcie_rockchip *rockchip,
 				     int region_no, int type, u8 num_pass_bits,
-				     u128 lower_addr, u128 upper_addr)
+				     u32 lower_addr, u32 upper_addr)
 {
-	u128 ob_addr_0;
-	u128 ob_addr_1;
-	u128 ob_desc_0;
-	u128 aw_offset;
+	u32 ob_addr_0;
+	u32 ob_addr_1;
+	u32 ob_desc_0;
+	u32 aw_offset;
 
 	if (region_no >= MAX_AXI_WRAPPER_REGION_NUM)
 		return -1;
@@ -905,11 +885,11 @@ static int rockchip_pcie_prog_ob_atu(struct pcie_rockchip *rockchip,
 
 static int rockchip_pcie_prog_ib_atu(struct pcie_rockchip *rockchip,
 				     int region_no, u8 num_pass_bits,
-				     u128 lower_addr, u128 upper_addr)
+				     u32 lower_addr, u32 upper_addr)
 {
-	u128 ib_addr_0;
-	u128 ib_addr_1;
-	u128 aw_offset;
+	u32 ib_addr_0;
+	u32 ib_addr_1;
+	u32 aw_offset;
 
 	if (region_no > MAX_AXI_IB_ROOTPORT_REGION_NUM)
 		return -1;
@@ -931,16 +911,16 @@ static int rockchip_pcie_prog_ib_atu(struct pcie_rockchip *rockchip,
 
 static int rockchip_pcie_cfg_atu(struct pcie_rockchip *rockchip)
 {
-	u256 mem_bus_addr = rockchip->axi_base + rockchip->axi_size;
-	u128 mem_size = 0;
-	u256 io_bus_addr = mem_bus_addr + mem_size;
-	u128 io_size = 0;struct pcie_bus *pbus = &rockchip->bus;
+	u64 mem_bus_addr = rockchip->axi_base + rockchip->axi_size;
+	u32 mem_size = 0;
+	u64 io_bus_addr = mem_bus_addr + mem_size;
+	u32 io_size = 0;struct pcie_bus *pbus = &rockchip->bus;
 	int reg_no = 0;
 	int offset;
 	int err, i;
 	for (i = 0; i < pbus->region_count; i++) {
 		if (pbus->regions[i].flags == PCI_REGION_MEM) {
-			mem_size = (u128)(pbus->regions[i].size);
+			mem_size = (u32)(pbus->regions[i].size);
 			debug("mem_size = 0x%x\n", mem_size);
 		} else if (pbus->regions[i].flags == PCI_REGION_IO) {
 			io_size = pbus->regions[i].size;
@@ -1014,7 +994,7 @@ static int pcie_rockchip_ofdata_to_platdata(struct udevice *dev)
 	struct pcie_rockchip *rockchip = dev_get_priv(dev);
 	int node = -1;
 	int i;
-	u128 reg;
+	u32 reg;
 	struct fdt_resource res_axi, res_apb;
     struct udevice *ctrl = pci_get_controller(dev);
 	struct pci_controller *hose = dev_get_uclass_priv(ctrl);
