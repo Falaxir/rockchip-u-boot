@@ -804,6 +804,9 @@ enum pci_size_t {
 	PCI_SIZE_8,
 	PCI_SIZE_16,
 	PCI_SIZE_32,
+	PCI_SIZE_64,
+	PCI_SIZE_128,
+	PCI_SIZE_256,
 };
 
 struct udevice;
