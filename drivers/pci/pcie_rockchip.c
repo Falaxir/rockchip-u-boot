@@ -152,7 +152,7 @@ enum of_gpio_flags {
 /* Size of one AXI Region (not Region 0) */
 #define AXI_REGION_SIZE				BIT(20)
 /* Size of Region 0, equal to sum of sizes of other regions */
-#define AXI_REGION_0_SIZE			(32 * (0x1 << 20))
+#define AXI_REGION_0_SIZE			(128 * (0x1 << 20))
 #define OB_REG_SIZE_SHIFT			5
 #define IB_ROOT_PORT_REG_SIZE_SHIFT		3
 #define AXI_WRAPPER_IO_WRITE			0x6
